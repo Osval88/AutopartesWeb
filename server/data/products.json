@@ -1,0 +1,74 @@
+[
+   {
+    "id": 1,
+    "nombre": "Cubiertas",
+    "precio": 900,
+    "img": "/img_products/1.png"
+   },
+   {
+    "id": 2,
+    "nombre": "Accesorios",
+    "precio": 400,
+    "img": "/img_products/2.png"
+   },
+   {
+    "id": 3,
+    "nombre": "Filtros",
+    "precio": 200,
+    "img": "/img_products/3.png"
+   },
+   {
+    "id": 4,
+    "nombre": "Pastillas",
+    "precio": 500,
+    "img": "/img_products/4.png"
+   },
+   {
+    "id": 5,
+    "nombre": "Bujías" ,
+    "precio": 300,
+    "img": "/img_products/5.png"
+   },
+   {
+    "id": 6,
+    "nombre": "Alternadores",
+    "precio": 1100,
+    "img": "/img_products/6.png"
+   },
+   {
+    "id": 7,
+    "nombre": "Escapes",
+    "precio": 800,
+    "img": "/img_products/7.png"
+   },
+   {
+    "id": 8,
+    "nombre": "Baterías",
+    "precio": 1100,
+    "img": "/img_products/8.png"
+   },
+   {
+    "id": 9,
+    "nombre": "Discos",
+    "precio": 600,
+    "img": "/img_products/9.png"
+   },
+   {
+    "id": 10,
+    "nombre": "Motor",
+    "precio": 3400,
+    "img": "/img_products/10.png"
+   },
+   {
+    "id": 11,
+    "nombre": "Bujes",
+    "precio": 300,
+    "img": "/img_products/11.png"
+   },
+   {
+    "id": 12,
+    "nombre": "Demás",
+    "precio": 1600,
+    "img": "/img_products/12.png"
+   }
+]
