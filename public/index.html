@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="UTF-8">
+    <title>Autopartes_Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="images/icons8-coche-32.png" type="image/png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="header">
+        <input type="checkbox" class="header__checkbox" id="open-menu">
+        <label for="open-menu" class="header__open-nav-button" role="button">📲</label>
+        <div class="header_logo-container">
+            <img class="header-logo" src="images/logo.png">
+        </div>
+        <nav class="header__nav">
+            <ul class="header__nav-list">
+                <li class="header__nav-item"><a href="#main">Conócenos</a></li>
+                <li class="header__nav-item"><a href="#products">Productos</a></li>
+                <li class="header__nav-item"><a href="#cart">Carrito</a></li>
+                <li class="header__nav-item"><a href="#contact">Contáctanos</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="main" id="main">
+        <div class="main__wrapper">
+            <div class="main__data-container">
+               <div class="main__data">
+                  <div class="main__description">
+                    <h1>AUTOPARTES WEB</h1>
+                    <p>
+                        Nos apasiona mantener tu vehículo siempre en movimiento. Somos una tienda especializada en la venta de autopartes de alta calidad, ofreciendo una amplia variedad de repuestos, accesorios y componentes para diferentes marcas y modelos. Trabajamos con proveedores confiables para garantizar productos duraderos y al mejor precio, brindando una experiencia de compra rápida, segura y sencilla. Nuestro compromiso es ofrecer asesoramiento personalizado y un servicio eficiente, porque entendemos que cada cliente y cada vehículo son únicos. En AUTOPARTES WEB, tu camino es nuestra prioridad.
+                    </p>
+                  </div>
+               </div>
+               <div class="main__img-container">
+                   <img src="images/car-parts.png" class="main__img">
+               </div>
+            </div>
+        </div>
+    </main>
+   <section class="products" id="products">
+    <h2 class="products__title">NUESTROS PRODUCTOS</h2>
+    <div class="products__products-container">
+    </div>
+</section>
+<section class="carrito" id="cart">
+    🛒
+    <h2>Carrito</h2>
+    <br>
+    <div id="carrito-container"></div>
+    <h3 id="total-carrito">Total: $0.00</h3>
+        <div id="paypal-button-container"></div>
+    <button id="btn-vaciar" class="btn-vaciar">Vaciar carrito</button>
+</section>
+    <section class="form" id="contact">
+        <h2 class="form__title">Contáctanos</h2>
+        <form class="form__form">
+            <div class="form__input-container">
+                <label>Nombre
+                    <input type="text" placeholder="Robert">
+                </label>
+            </div>
+            <div class="form__input-container">
+                <label>Apellido
+                    <input type="text" placeholder="Smith">
+                </label>
+            </div>
+            <div class="form__input-container">
+                <label>Mail
+                    <input type="email" placeholder="yourmail@example.com">
+                </label>
+            </div>
+            <div class="form__input-container">
+                <label>Mensaje
+                    <input type="text" placeholder="Your message">
+                </label>
+            </div>
+            <div class="form__input-container">
+                <input type="submit">
+            </div>
+        </form>
+    </section>
+    <footer>
+        <strong>Carsparts</strong> - Copyright  2026
+    </footer>
+    <script src="https://www.paypal.com/sdk/js?client-id=AXfk5od4MuaiqqgcKCE9FGc_LPMrE6JhB9s2-N3aUg-DPPnRXXzrPPVe3eofGq0lbJoN5IpLaDiwJuwT&currency=USD&locale=es_AR"></script>
+    <script src="js/paypal.js"></script>
+    <script src="js/script.js"></script>
+</body>
+    
+</html>
