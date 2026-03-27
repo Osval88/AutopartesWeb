@@ -1,77 +1,60 @@
-
+// 1. Esta función LIMPIA y decide si mostrar el botón
 function mostrarBotonPago() {
-    const botonPagoExistente = document.getElementById("paypal-button-container");
+    const contenedor = document.getElementById("paypal-button-container");
     
-    if (botonPagoExistente) {
-        botonPagoExistente.innerHTML = "";
+    if (!contenedor) return;
+
+    // Limpiamos botones viejos para que no se dupliquen
+    contenedor.innerHTML = "";
+
+    // Si el carrito tiene productos, inicializamos el botón
+    if (carrito.length > 0) {
+        inicializarPayPal();
     }
-    if (carrito.length === 0) 
-        return;
-    
-    inicializarPayPal();
 }
 
-
+// 2. Esta función DIBUJA el botón y gestiona el pago
 function inicializarPayPal() {
     if (typeof paypal === 'undefined') {
-        console.error("PayPal SDK no está cargado. Verifica tu HTML.");
+        console.error("PayPal SDK no está cargado.");
         return;
     }
 
-const total = calcularTotal();
-
-
-    const items = carrito.map(producto => ({
-        name: producto.nombre,
-        unit_amount: {
-            currency_code: "USD", 
-            value: producto.precio.toFixed(2).toString()
-        },
-        quantity: producto.cantidad.toString()
-    }));
-    
-
     paypal.Buttons({
-        createOrder: (data, actions) => {
-            return actions.order.create({
-                intent: "CAPTURE",
-                purchase_units: [
-                {
-                amount: {
-                currency_code: "USD", 
-                value: total.toFixed(2).toString(),
-                breakdown: {
-                item_total: {
-                currency_code: "USD", 
-                value: total.toFixed(2).toString()
+        // CREAR LA ORDEN
+        createOrder: async () => {
+            try {
+                const response = await fetch('/api/paypal/create-order', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ carrito: carrito }) 
+                });
+                const data = await response.json();
+                return data.id; 
+            } catch (err) {
+                console.error("Error al contactar al servidor:", err);
+            }
+        },
+
+        // CAPTURAR EL PAGO
+        onApprove: async (data) => {
+            try {
+                const response = await fetch('/api/paypal/capture-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderID: data.orderID })
+                });
+                const detalles = await response.json();
+
+                if (detalles.status === "COMPLETED") {
+                    alert("¡Gracias por tu compra en AutopartesWeb!");
+                    carrito = [];
+                    localStorage.removeItem("carrito");
+                    mostrarCarrito(); // Esto actualizará el carrito y ocultará el botón
                 }
-                }
-                },
-                                    items: items
-                                    }
-                                ]
-            });
-        },
-
-        onApprove: (data, actions) => {
-            return actions.order.capture().then((details) => {
-                console.log("Detalles de la transacción:", details);
-                alert(`¡Pago exitoso! Tu ID de transacción es: ${details.id}`);
-                
-                carrito = [];
-                localStorage.removeItem("carrito");
-                mostrarCarrito();
-            });
-        },
-
-        onError: (err) => {
-            console.error("Error en el pago:", err);
-            alert("Hubo un error al procesar tu pago. Por favor, intenta de nuevo.");
-        },
-
-        onCancel: (data) => {
-            console.log("Pago cancelado por el usuario");
-            alert("Has cancelado el pago.");
+            } catch (err) {
+                alert("Error al confirmar el pago.");
+            }
         }
     }).render("#paypal-button-container");
 }
