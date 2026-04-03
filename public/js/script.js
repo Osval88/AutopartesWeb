@@ -87,7 +87,6 @@ function mostrarCarrito() {
     if (carrito.length === 0) {
         contenedor.innerHTML = "<p>El carrito está vacío</p>";
     } else {
-
         let html = "";
         carrito.forEach((producto) => {
             html += `
