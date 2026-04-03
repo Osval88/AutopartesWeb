@@ -77,7 +77,6 @@ function calcularTotal() {
     const contenedorTotal = document.getElementById("total-carrito");
     contenedorTotal.textContent = `Total: $${total.toFixed(2)}`;
     
-    return total; 
 }
 
 
