@@ -1,9 +1,7 @@
 const Product = require('../models/productModel');
 
-// En tu archivo de controlador
-const getAllProducts = async (req, res) => { // Agregamos async aquí
+const getAllProducts = async (req, res) => {
     try {
-        // Agregamos await aquí para esperar al modelo
         const products = await Product.getAll(); 
         res.json(products);
     } catch (error) {

@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// Si tu Node es < 18, descomenta la siguiente línea y haz: npm install node-fetch@2
-// const fetch = require('node-fetch'); 
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 const base = "https://api-m.sandbox.paypal.com";
@@ -24,10 +22,8 @@ router.post("/create-order", async (req, res) => {
         const { carrito } = req.body;
         const accessToken = await getAccessToken();
 
-        // VALIDACIÓN DE PRECIOS REALES
         let totalServidor = 0;
         carrito.forEach(item => {
-            // Buscamos el producto en tu JSON para usar el precio real
             const productoReal = productosDB.find(p => p.id === item.id);
             if (productoReal) {
                 totalServidor += parseFloat(productoReal.precio) * parseInt(item.cantidad);

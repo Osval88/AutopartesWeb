@@ -1,19 +1,16 @@
-// 1. Esta función LIMPIA y decide si mostrar el botón
+
 function mostrarBotonPago() {
     const contenedor = document.getElementById("paypal-button-container");
     
     if (!contenedor) return;
 
-    // Limpiamos botones viejos para que no se dupliquen
     contenedor.innerHTML = "";
 
-    // Si el carrito tiene productos, inicializamos el botón
     if (carrito.length > 0) {
         inicializarPayPal();
     }
 }
 
-// 2. Esta función DIBUJA el botón y gestiona el pago
 function inicializarPayPal() {
     if (typeof paypal === 'undefined') {
         console.error("PayPal SDK no está cargado.");
@@ -21,7 +18,7 @@ function inicializarPayPal() {
     }
 
     paypal.Buttons({
-        // CREAR LA ORDEN
+
         createOrder: async () => {
             try {
                 const response = await fetch('/api/paypal/create-order', { 
@@ -36,7 +33,7 @@ function inicializarPayPal() {
             }
         },
 
-        // CAPTURAR EL PAGO
+
         onApprove: async (data) => {
             try {
                 const response = await fetch('/api/paypal/capture-order', {
@@ -50,7 +47,7 @@ function inicializarPayPal() {
                     alert("¡Gracias por tu compra en AutopartesWeb!");
                     carrito = [];
                     localStorage.removeItem("carrito");
-                    mostrarCarrito(); // Esto actualizará el carrito y ocultará el botón
+                    mostrarCarrito();
                 }
             } catch (err) {
                 alert("Error al confirmar el pago.");

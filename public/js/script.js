@@ -81,15 +81,13 @@ function calcularTotal() {
 }
 
 
-
-
 function mostrarCarrito() {
     const contenedor = document.getElementById("carrito-container");
     
     if (carrito.length === 0) {
         contenedor.innerHTML = "<p>El carrito está vacío</p>";
     } else {
-        // Creamos todo el HTML en una variable primero
+
         let html = "";
         carrito.forEach((producto) => {
             html += `
@@ -100,12 +98,12 @@ function mostrarCarrito() {
                 </div>
             `;
         });
-        contenedor.innerHTML = html; // Una sola actualización al DOM
+        contenedor.innerHTML = html;
     }
 
     activarBotonesEliminar();
     calcularTotal();
-    // Esta función debe existir en tu paypal.js
+
     if (typeof mostrarBotonPago === "function") mostrarBotonPago();
 }
 
