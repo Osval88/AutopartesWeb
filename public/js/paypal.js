@@ -39,8 +39,11 @@ function inicializarPayPal() {
                 const response = await fetch('/api/paypal/capture-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderID: data.orderID })
-                });
+                    body: JSON.stringify({ 
+                        orderID: data.orderID,
+                        carrito: carrito 
+    })
+});
                 const detalles = await response.json();
 
                 if (detalles.status === "COMPLETED") {

@@ -1,11 +1,17 @@
 
+// Agregamos el fetch real para traer los productos desde la base de datos
 fetch("/api/products")
-    .then(res => res.json())
-    .then(data => {
-        console.log(data);
-        mostrarProductos(data);
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Error en la respuesta del servidor");
+        }
+        return res.json();
     })
-    .catch(error => console.error("Error:", error));
+    .then(data => {
+        console.log("Productos cargados desde MySQL:", data);
+        mostrarProductos(data); // Le pasa las piezas a tu función que arma el HTML
+    })
+    .catch(error => console.error("Error al cargar el catálogo:", error));
 
 
 function mostrarProductos(productos) {
@@ -19,6 +25,7 @@ function mostrarProductos(productos) {
                 <img src="${producto.img}" alt="${producto.nombre}">
                 <h2 class="products__products-name">${producto.nombre}</h2>
                 <p>$${producto.precio}</p>
+                <p class="producto-stock">Disponibles: <strong>${producto.stock} unidades</strong></p>
                 <button class="btn-agregar" data-id="${producto.id}">
                     Agregar al carrito
                 </button>
