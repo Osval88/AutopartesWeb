@@ -14,13 +14,23 @@ async function poblarBaseDeDatos() {
 
         console.log(` Leyendo ${productosALevantar.length} productos del archivo JSON...`);
 
-        // ¡ESTO CREA LA TABLA EN PHPMYADMIN SI NO EXISTE!
-        await sequelize.sync({ force: true }); 
-        console.log(' Tabla "productos" creada/reiniciada con éxito.');
+        // CON ESTO OBLIGAMOS A QUE TODO USE LA MISMA CONEXIÓN
+        await sequelize.transaction(async (t) => {
+            // 1. Desactivamos en esta conexión
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0;', { transaction: t });
 
-        await Producto.bulkCreate(productosALevantar);
+            // 2. Sincronizamos usando la misma transacción
+            await sequelize.sync({ force: true, transaction: t }); 
+            console.log(' Tabla "productos" creada/reiniciada con éxito.');
+
+            // 3. Volvemos a activar
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 1;', { transaction: t });
+
+            // 4. Insertamos los productos
+            await Producto.bulkCreate(productosALevantar, { transaction: t });
+        });
+
         console.log(' ¡Base de datos poblada con éxito con los productos de AutopartesWeb! 🚀');
-        
         process.exit(0); 
     } catch (error) {
         console.error('❌ Error al migrar los datos:', error);

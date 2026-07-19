@@ -570,3 +570,47 @@ footer {
 }
 
 /* FOOTER ENDS */
+
+.sandbox-alert {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px dashed #a71616; /* Línea discontinua con tu rojo */
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    max-width: 400px;
+    text-align: center;
+}
+
+.sandbox-alert__title {
+    color: #ffcc00; /* Amarillo para llamar la atención moderadamente */
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.sandbox-alert__text {
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.sandbox-alert__credentials {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #fff;
+    display: inline-block;
+    text-align: left;
+}
+
+.sandbox-alert__credentials p {
+    margin: 4px 0;
+}
+
+.sandbox-alert__credentials span {
+    color: #00ff00; /* Resalta las credenciales en verde */
+    font-family: monospace;
+}
