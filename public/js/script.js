@@ -1,145 +1,248 @@
 
-// Agregamos el fetch real para traer los productos desde la base de datos
-fetch("/api/products")
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Error en la respuesta del servidor");
-        }
-        return res.json();
-    })
-    .then(data => {
-        console.log("Productos cargados desde MySQL:", data);
-        mostrarProductos(data); // Le pasa las piezas a tu función que arma el HTML
-    })
-    .catch(error => console.error("Error al cargar el catálogo:", error));
-
-
-function mostrarProductos(productos) {
-
-    const contenedor = document.querySelector(".products__products-container");
-
-    let html = "";
-    productos.forEach(producto => { 
-        html += `
-            <div class="products__products">
-                <img src="${producto.img}" alt="${producto.nombre}">
-                <h2 class="products__products-name">${producto.nombre}</h2>
-                <p>$${producto.precio}</p>
-                <p class="producto-stock">Disponibles: <strong>${producto.stock} unidades</strong></p>
-                <button class="btn-agregar" data-id="${producto.id}">
-                    Agregar al carrito
-                </button>
-            </div>
-        `;
-    });
-    contenedor.innerHTML = html;
-
-    activarBotones(productos);
-
-}
-
-
-
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
+document.addEventListener("DOMContentLoaded", async () => {
+    // ==========================================
+    // 1. CARGA INICIAL DE PRODUCTOS (FETCH)
+    // ==========================================
+    fetch("/api/products")
+        .then(res => {
+            if (!res.ok) throw new Error("Error en la respuesta del servidor");
+            return res.json();
+        })
+        .then(data => {
+            console.log("Productos cargados desde MySQL:", data);
+            mostrarProductos(data);
+        })
+        .catch(error => console.error("Error al cargar el catálogo:", error));
 
-
-function activarBotones(productos) {
-
-    const botones = document.querySelectorAll(".btn-agregar");
-
-    botones.forEach(boton => {
-        boton.addEventListener("click", (e) => {
-
-            const id = parseInt(e.target.dataset.id);
-            const productoSeleccionado = productos.find(p => p.id === id);
-            const productoEnCarrito = carrito.find(p => p.id === productoSeleccionado.id);
-
-            if (productoEnCarrito) {
-                productoEnCarrito.cantidad++;
-            } else {
-                carrito.push({
-                    ...productoSeleccionado,
-                    cantidad: 1
-                });
-            }
-
-            localStorage.setItem("carrito", JSON.stringify(carrito));
-            mostrarCarrito();
-            console.log("Carrito:", carrito);
-
-        });
-    });
-}
-
-
-
-
-function calcularTotal() {
-
-    const total = carrito.reduce((acumulador, producto) => {
-        return acumulador + (producto.precio * producto.cantidad);
-    }, 0);
-
-    const contenedorTotal = document.getElementById("total-carrito");
-    contenedorTotal.textContent = `Total: $${total.toFixed(2)}`;
-    
-}
-
-
-function mostrarCarrito() {
-    const contenedor = document.getElementById("carrito-container");
-    
-    if (carrito.length === 0) {
-        contenedor.innerHTML = "<p>El carrito está vacío</p>";
-    } else {
+    function mostrarProductos(productos) {
+        const contenedor = document.querySelector(".products__products-container");
+        if (!contenedor) return;
+        
         let html = "";
-        carrito.forEach((producto) => {
+        productos.forEach(producto => { 
             html += `
-                <div class="item-carrito">
-                    <p>${producto.nombre} - $${producto.precio} x ${producto.cantidad}</p>
-                    <p>Subtotal: $${(producto.precio * producto.cantidad).toFixed(2)}</p>
-                    <button class="btn-eliminar" data-id="${producto.id}">Eliminar</button>
+                <div class="products__products">
+                    <img src="${producto.img}" alt="${producto.nombre}">
+                    <h2 class="products__products-name">${producto.nombre}</h2>
+                    <p>$${producto.precio}</p>
+                    <p class="producto-stock">Disponibles: <strong>${producto.stock} unidades</strong></p>
+                    <button class="btn-agregar" data-id="${producto.id}">
+                        Agregar al carrito
+                    </button>
                 </div>
             `;
         });
         contenedor.innerHTML = html;
+        activarBotones(productos);
     }
 
-    activarBotonesEliminar();
-    calcularTotal();
+    function activarBotones(productos) {
+        const botones = document.querySelectorAll(".btn-agregar");
+        botones.forEach(boton => {
+            boton.addEventListener("click", (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const productoSeleccionado = productos.find(p => p.id === id);
+                const productoEnCarrito = carrito.find(p => p.id === productoSeleccionado.id);
 
-    if (typeof mostrarBotonPago === "function") mostrarBotonPago();
-}
+                if (productoEnCarrito) {
+                    productoEnCarrito.cantidad++;
+                } else {
+                    carrito.push({
+                        ...productoSeleccionado,
+                        cantidad: 1
+                    });
+                }
 
-mostrarCarrito();
-
-
-function activarBotonesEliminar() {
-    const botonesEliminar = document.querySelectorAll(".btn-eliminar");
-
-    botonesEliminar.forEach(boton => {
-        boton.addEventListener("click", (e) => {
-            const id = parseInt(e.target.dataset.id);
-            carrito = carrito.filter(p => p.id !== id); 
-            
-            localStorage.setItem("carrito", JSON.stringify(carrito));
-            mostrarCarrito();
+                localStorage.setItem("carrito", JSON.stringify(carrito));
+                mostrarCarrito();
+                
+                const seccionCarrito = document.querySelector(".carrito");
+                if (seccionCarrito) {
+                    seccionCarrito.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         });
-    });
-}
-
-
-function vaciarCarrito() {
-
-    const confirmar = confirm("¿Seguro que querés vaciar el carrito?");
-
-    if (confirmar) {
-        carrito = [];
-        localStorage.removeItem("carrito");
-        mostrarCarrito();
     }
-}
 
-document.getElementById("btn-vaciar")
-        .addEventListener("click", vaciarCarrito);
+    // ==========================================
+    // 2. LÓGICA DEL CARRITO DE COMPRAS
+    // ==========================================
+    function calcularTotal() {
+        const total = carrito.reduce((acumulador, producto) => {
+            return acumulador + (producto.precio * producto.cantidad);
+        }, 0);
+
+        const contenedorTotal = document.getElementById("total-carrito");
+        if (contenedorTotal) contenedorTotal.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    function mostrarCarrito() {
+        const contenedor = document.getElementById("carrito-container");
+        if (!contenedor) return;
+        
+        if (carrito.length === 0) {
+            contenedor.innerHTML = "<p>El carrito está vacío</p>";
+        } else {
+            let html = "";
+            carrito.forEach((producto) => {
+                html += `
+                    <div class="item-carrito">
+                        <p>${producto.nombre} - $${producto.precio} x ${producto.cantidad}</p>
+                        <p>Subtotal: $${(producto.precio * producto.cantidad).toFixed(2)}</p>
+                        <button class="btn-eliminar" data-id="${producto.id}">Eliminar</button>
+                    </div>
+                `;
+            });
+            contenedor.innerHTML = html;
+        }
+
+        activarBotonesEliminar();
+        calcularTotal();
+
+        if (typeof mostrarBotonPago === "function") mostrarBotonPago();
+    }
+
+    function activarBotonesEliminar() {
+        const botonesEliminar = document.querySelectorAll(".btn-eliminar");
+        botonesEliminar.forEach(boton => {
+            boton.addEventListener("click", (e) => {
+                const id = parseInt(e.target.dataset.id);
+                carrito = carrito.filter(p => p.id !== id); 
+                localStorage.setItem("carrito", JSON.stringify(carrito));
+                mostrarCarrito();
+            });
+        });
+    }
+
+    function vaciarCarrito() {
+        const confirmar = confirm("¿Seguro que querés vaciar el carrito?");
+        if (confirmar) {
+            carrito = [];
+            localStorage.removeItem("carrito");
+            mostrarCarrito();
+        }
+    }
+
+    const btnVaciar = document.getElementById("btn-vaciar");
+    if (btnVaciar) btnVaciar.addEventListener("click", vaciarCarrito);
+
+    const btnSeguirComprando = document.getElementById("btn-seguir-comprando");
+    if (btnSeguirComprando) {
+        btnSeguirComprando.addEventListener("click", () => {
+            const seccionProductos = document.querySelector(".products");
+            if (seccionProductos) seccionProductos.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    // Renderizar estado inicial del carrito al cargar la página
+    mostrarCarrito();
+
+    // ==========================================
+    // 3. ESTADO DE AUTENTICACIÓN Y MIS PEDIDOS
+    // ==========================================
+    const loginItem = document.getElementById("login-item");
+    const logoutItem = document.getElementById("logout-item");
+    const userGreetingItem = document.getElementById("user-greeting-item");
+    const ordersItem = document.getElementById("orders-item");
+    const userNameSpan = document.getElementById("user-name");
+    const btnVerPedidos = document.getElementById("btn-ver-pedidos");
+    const seccionPedidos = document.getElementById("mis-pedidos");
+    const tablaPedidosBody = document.getElementById("tabla-pedidos-body");
+
+    try {
+        const respuesta = await fetch('/api/auth/status');
+        const data = await respuesta.json();
+
+        if (data.loggedIn) {
+            if (loginItem) loginItem.style.display = "none";
+            if (logoutItem) logoutItem.style.display = "block";
+            if (userGreetingItem) userGreetingItem.style.display = "block";
+            if (ordersItem) ordersItem.style.display = "block";
+            
+            if (userNameSpan) userNameSpan.textContent = `Hola, ${data.user.nombre.split(' ')[0]}`;
+
+            if (btnVerPedidos) {
+                btnVerPedidos.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    if (seccionPedidos) {
+                        seccionPedidos.style.display = "flex";
+                        seccionPedidos.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    try {
+                        const resOrdenes = await fetch('/api/auth/mis-ordenes');
+                        const ordenes = await resOrdenes.json();
+
+                        if (!tablaPedidosBody) return;
+                        tablaPedidosBody.innerHTML = "";
+
+                        if (ordenes.length === 0) {
+                            tablaPedidosBody.innerHTML = `<tr><td colspan="4" style="padding: 15px; text-align: center;">Todavía no realizaste ninguna compra.</td></tr>`;
+                            return;
+                        }
+
+                        ordenes.forEach(orden => {
+                            const fecha = new Date(orden.createdAt).toLocaleDateString('es-AR');
+                            const fila = document.createElement("tr");
+                            fila.style.borderBottom = "1px solid rgba(255,255,255,0.2)";
+                            fila.innerHTML = `
+                                <td style="padding: 12px;">#${orden.id}</td>
+                                <td style="padding: 12px;">${fecha}</td>
+                                <td style="padding: 12px; font-weight: bold;">$${orden.total || 0}</td>
+                                <td style="padding: 12px;"><span style="color: ${orden.estado === 'completado' ? '#00ff00' : '#ffcc00'}">${orden.estado || 'Pendiente'}</span></td>
+                            `;
+                            tablaPedidosBody.appendChild(fila);
+                        });
+                    } catch (err) {
+                        console.error("Error al cargar las órdenes:", err);
+                    }
+                });
+            }
+        } else {
+            if (loginItem) loginItem.style.display = "block";
+            if (logoutItem) logoutItem.style.display = "none";
+            if (userGreetingItem) userGreetingItem.style.display = "none";
+            if (ordersItem) ordersItem.style.display = "none";
+            if (seccionPedidos) seccionPedidos.style.display = "none";
+        }
+    } catch (error) {
+        console.error("Error al comprobar la sesión:", error);
+    }
+
+    // ==========================================
+    // 4. FORMULARIO DE CONTACTO
+    // ==========================================
+    const formularioContacto = document.getElementById("contacto-form");
+    if (formularioContacto) {
+        formularioContacto.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById("contacto-nombre").value;
+            const apellido = document.getElementById("contacto-apellido").value;
+            const mail = document.getElementById("contacto-mail").value;
+            const mensaje = document.getElementById("contacto-mensaje").value;
+
+            try {
+                const respuesta = await fetch("/api/contacto", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre, apellido, mail, mensaje })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert("¡Mensaje enviado con éxito! Gracias por contactarte.");
+                    formularioContacto.reset();
+                } else {
+                    alert(`Error: ${resultado.error || "No se pudo enviar el mensaje."}`);
+                }
+            } catch (error) {
+                console.error("Error al enviar el formulario:", error);
+                alert("Hubo un problema de conexión con el servidor.");
+            }
+        });
+    }
+});

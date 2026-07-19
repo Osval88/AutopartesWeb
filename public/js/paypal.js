@@ -51,6 +51,10 @@ function inicializarPayPal() {
                     carrito = [];
                     localStorage.removeItem("carrito");
                     mostrarCarrito();
+                    const btnVerPedidos = document.getElementById("btn-ver-pedidos");
+                    if (btnVerPedidos) {
+                        btnVerPedidos.click(); 
+                    }
                 }
             } catch (err) {
                 alert("Error al confirmar el pago.");

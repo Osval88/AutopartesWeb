@@ -20,27 +20,43 @@
                 <li class="header__nav-item"><a href="#products">Productos</a></li>
                 <li class="header__nav-item"><a href="#cart">Carrito</a></li>
                 <li class="header__nav-item"><a href="#contact">Contáctanos</a></li>
+                <!-- Botón para iniciar sesión con Google (visible si está deslogueado) -->
+                <li class="header__nav-item" id="login-item">
+                <a href="/api/auth/google" class="btn-google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" width="18" style="margin-right: 8px; vertical-align: middle;">
+                Iniciar sesión con Google
+                </a>
+                </li>
+                <li class="header__nav-item" id="user-greeting-item" style="display: none;">
+                <span class="user-badge" id="user-name">Hola, Usuario</span>
+                </li>
+                <li class="header__nav-item" id="orders-item" style="display: none;">
+                <a href="#mis-pedidos" id="btn-ver-pedidos">Mis Pedidos</a>
+                </li>
+                <li class="header__nav-item" id="logout-item" style="display: none;">
+                <a href="/api/auth/logout" class="btn-logout">Cerrar Sesión</a>
+                </li>
             </ul>
         </nav>
     </header>
     <main class="main" id="main">
         <div class="main__wrapper">
             <div class="main__data-container">
-               <div class="main__data">
-                  <div class="main__description">
+            <div class="main__data">
+            <div class="main__description">
                     <h1>AUTOPARTES WEB</h1>
                     <p>
                         Nos apasiona mantener tu vehículo siempre en movimiento. Somos una tienda especializada en la venta de autopartes de alta calidad, ofreciendo una amplia variedad de repuestos, accesorios y componentes para diferentes marcas y modelos. Trabajamos con proveedores confiables para garantizar productos duraderos y al mejor precio, brindando una experiencia de compra rápida, segura y sencilla. Nuestro compromiso es ofrecer asesoramiento personalizado y un servicio eficiente, porque entendemos que cada cliente y cada vehículo son únicos. En AUTOPARTES WEB, tu camino es nuestra prioridad.
                     </p>
-                  </div>
-               </div>
-               <div class="main__img-container">
-                   <img src="images/car-parts.png" class="main__img">
-               </div>
+            </div>
+            </div>
+            <div class="main__img-container">
+                <img src="images/car-parts.png" class="main__img">
+            </div>
             </div>
         </div>
     </main>
-   <section class="products" id="products">
+<section class="products" id="products">
     <h2 class="products__title">NUESTROS PRODUCTOS</h2>
     <div class="products__products-container">
     </div>
@@ -52,35 +68,54 @@
     <div id="carrito-container"></div>
     <h3 id="total-carrito">Total: $0.00</h3>
         <div id="paypal-button-container"></div>
+    <button id="btn-seguir-comprando" class="btn-seguir">Seguir Comprando</button>
     <button id="btn-vaciar" class="btn-vaciar">Vaciar carrito</button>
 </section>
-    <section class="form" id="contact">
-        <h2 class="form__title">Contáctanos</h2>
-        <form class="form__form">
-            <div class="form__input-container">
-                <label>Nombre
-                    <input type="text" placeholder="Robert">
-                </label>
-            </div>
-            <div class="form__input-container">
-                <label>Apellido
-                    <input type="text" placeholder="Smith">
-                </label>
-            </div>
-            <div class="form__input-container">
-                <label>Mail
-                    <input type="email" placeholder="yourmail@example.com">
-                </label>
-            </div>
-            <div class="form__input-container">
-                <label>Mensaje
-                    <input type="text" placeholder="Your message">
-                </label>
-            </div>
-            <div class="form__input-container">
-                <input type="submit">
-            </div>
-        </form>
+<section class="form" id="contact">
+    <h2 class="form__title">Contáctanos</h2>
+    <form class="form__form" id="contacto-form">
+        <div class="form__input-container">
+            <label>Nombre
+                <input type="text" id="contacto-nombre" placeholder="Robert" required>
+            </label>
+        </div>
+        <div class="form__input-container">
+            <label>Apellido
+                <input type="text" id="contacto-apellido" placeholder="Smith">
+            </label>
+        </div>
+        <div class="form__input-container">
+            <label>Mail
+                <input type="email" id="contacto-mail" placeholder="yourmail@example.com" required>
+            </label>
+        </div>
+        <div class="form__input-container">
+            <label>Mensaje
+                <textarea id="contacto-mensaje" placeholder="Your message" required style="width: 100%; min-height: 80px; padding: 10px; border-radius: 5px; border: none; resize: vertical;"></textarea>
+            </label>
+        </div>
+        <div class="form__input-container">
+            <input type="submit" value="Enviar">
+        </div>
+    </form>
+</section>
+    <!-- SECCIÓN DE HISTORIAL DE COMPRAS (OCULTA POR DEFECTO) -->
+    <section id="mis-pedidos" class="carrito" style="display: none; margin-top: 50px;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Mis Pedidos</h2>
+        <div style="width: 100%; overflow-x: auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+        <table style="width: 100%; font-size: 1.2rem; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid #fff;">
+                    <th style="padding: 10px;">N° Orden</th>
+                    <th style="padding: 10px;">Fecha</th>
+                    <th style="padding: 10px;">Total</th>
+                    <th style="padding: 10px;">Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-pedidos-body">
+            </tbody>
+        </table>
+        </div>
     </section>
     <footer>
         <strong>Carsparts</strong> - Copyright  2026

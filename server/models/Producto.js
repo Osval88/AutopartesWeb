@@ -15,7 +15,7 @@ const Producto = sequelize.define('Producto', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    img: { // <--- CAMBIADO DE "imagen" A "img" PARA QUE SEA IGUAL AL JSON
+    img: { 
         type: DataTypes.STRING,
         allowNull: false
     },

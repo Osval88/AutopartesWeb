@@ -69,6 +69,61 @@ div, ul, nav, header, footer, a, li,  label, body {
     margin: 10px 20px;
 }
 
+/* Botón de Google Estilizado */
+.btn-google {
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #747775;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.btn-google:hover {
+    background-color: #f2f2f2;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+}
+
+/* Botón de Cerrar Sesión Estilizado */
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffffff;
+    color: #a71616; /* El mismo rojo oscuro de tus títulos h1 */
+    border: 1px solid #a71616;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px; /* Igualamos el tamaño del de Google */
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    cursor: pointer;
+}
+
+/* Evitamos que las reglas generales del header le metan un subrayado molesto */
+.header__nav-list .header__nav-item .btn-logout:is(:hover, :active) {
+    background-color: #a71616;
+    color: #ffffff;
+    text-decoration: none; 
+}
+
+/* Saludo de Usuario en Texto Puro */
+.user-badge {
+    color: #630000; /* El mismo bordó de tus links */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px; /* Igualamos los 20px generales que tiene tu .header */
+    font-weight: bold;
+    user-select: none;
+}
+
 .header__nav-item {
     list-style: none;
 }
@@ -99,8 +154,9 @@ div, ul, nav, header, footer, a, li,  label, body {
       flex-direction: row;
       height: auto;
       width: auto;
-      gap: 20px;
+      gap: 30px;
       margin-right: 40px;
+      align-items: center;
    }
 
    .header__open-nav-button {
@@ -318,11 +374,37 @@ h1 {
 
 .btn-vaciar, .btn-eliminar {
     padding: 12px;
-    background-color: #6d6d6d;
+    background-color: #3a3939;
     color: #fff;
     border-radius: 10px;
     border: none;
     cursor: pointer;
+}
+
+.btn-vaciar:hover {
+    background-color: #ffffff;
+    color: #a71616;
+    outline: 2px solid #a71616;
+}
+
+.btn-seguir {
+    padding: 12px;
+    background-color: #a71616; /* Usamos tu rojo de los títulos para que resalte */
+    color: #fff;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-seguir:hover {
+    background-color: #ffffff;
+    color: #a71616;
+    outline: 2px solid #a71616;
 }
 
 
@@ -420,6 +502,62 @@ h1 {
 
 /* CONTACT ENDS */
 
+/* RESPONSIVE PARA LA TABLA DE MIS PEDIDOS (Solo celulares) */
+@media (max-width: 600px) {
+    /* 1. Le damos aire al contenedor gris de fondo para que no asfixie la tabla */
+    #mis-pedidos {
+        margin: 40px 12px !important;
+        padding: 30px 12px !important;
+        width: calc(100% - 24px) !important;
+    }
+
+    /* 2. Obligamos a la tabla y sus componentes a estirarse al 100% real */
+    #mis-pedidos table, 
+    #mis-pedidos tbody, 
+    #mis-pedidos tr {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* 3. Ocultamos los encabezados nativos */
+    #mis-pedidos th,
+    #mis-pedidos thead {
+        display: none !important;
+    }
+
+    /* 4. Estilizamos cada fila como una tarjeta limpia y ancha */
+    #mis-pedidos tr {
+        background: rgba(255, 255, 255, 0.05) !important;
+        margin-bottom: 15px !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* 5. Estructura flex para poner el título a la izquierda y el dato a la derecha */
+    #mis-pedidos td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 10px 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        font-size: 1rem !important;
+        text-align: right !important;
+    }
+
+    /* Quitamos el borde inferior al último dato de la tarjeta */
+    #mis-pedidos td:last-child {
+        border-bottom: none !important;
+    }
+
+    /* 6. Inyección de texto limpio y ordenado a la izquierda */
+    #mis-pedidos td:nth-of-type(1)::before { content: "N° Orden:"; font-weight: bold; color: rgba(255,255,255,0.6); text-align: left; }
+    #mis-pedidos td:nth-of-type(2)::before { content: "Fecha:"; font-weight: bold; color: rgba(255,255,255,0.6); text-align: left; }
+    #mis-pedidos td:nth-of-type(3)::before { content: "Total:"; font-weight: bold; color: rgba(255,255,255,0.6); text-align: left; }
+    #mis-pedidos td:nth-of-type(4)::before { content: "Estado:"; font-weight: bold; color: rgba(255,255,255,0.6); text-align: left; }
+}
 
 /* SECTION FOOTER */
 

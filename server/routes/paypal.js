@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const Orden = require('../models/Orden');
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 const base = "https://api-m.sandbox.paypal.com";
 
-// Importamos el modelo (le dejamos el nombre Producto para que sea más claro)
+// Importamos el modelo
 const Producto = require('../models/Producto.js');
 
 const getAccessToken = async () => {
@@ -26,11 +27,9 @@ router.post("/create-order", async (req, res) => {
 
         let totalServidor = 0;
 
-        // Usamos un bucle for...of para poder meter un 'await' adentro e ir a buscar a MySQL uno por uno
         for (const item of carrito) {
-            const productoReal = await Producto.findByPk(item.id); // Consulta directa por ID (Primary Key)
+            const productoReal = await Producto.findByPk(item.id); 
             if (productoReal) {
-                // Ojo: validamos también que haya stock suficiente antes de cobrarle
                 if (productoReal.stock < item.cantidad) {
                     return res.status(400).json({ error: `Stock insuficiente para: ${productoReal.nombre}` });
                 }
@@ -63,10 +62,9 @@ router.post("/create-order", async (req, res) => {
     }
 });
 
-// 2. CAPTURAR EL PAGO Y DESCONTAR STOCK
+// 2. CAPTURAR EL PAGO Y DESCONTAR STOCK (E INSERTAR EN MYSQL)
 router.post("/capture-order", async (req, res) => {
     try {
-        // !!! IMPORTANTE: Recibimos también el carrito desde el frontend !!!
         const { orderID, carrito } = req.body; 
         const accessToken = await getAccessToken();
         
@@ -84,11 +82,25 @@ router.post("/capture-order", async (req, res) => {
         if (data.status === "COMPLETED") {
             console.log("💰 Pago aprobado por PayPal. Descontando stock en MySQL...");
 
-            // Recorremos el carrito e impactamos en la base de datos
+            let totalCarrito = 0;
+            for (const item of carrito) {
+                const productoReal = await Producto.findByPk(item.id);
+                if (productoReal) {
+                    totalCarrito += parseFloat(productoReal.precio) * parseInt(item.cantidad);
+                }
+            }
+
+            await Orden.create({
+                paypalOrderId: orderID,
+                total: totalCarrito.toFixed(2),
+                estado: 'completado',
+                usuarioId: req.user ? req.user.id : null 
+            });
+            console.log("💾 ¡Orden registrada con éxito en MySQL!");
+
             for (const item of carrito) {
                 const producto = await Producto.findByPk(item.id);
                 if (producto) {
-                    // decrement() le resta de forma segura a la columna 'stock' la cantidad enviada
                     await producto.decrement('stock', { by: item.cantidad });
                     console.log(`📉 Stock reducido para [ID ${item.id}]: -${item.cantidad} unidades.`);
                 }
