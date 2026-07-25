@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (contenedorTotal) contenedorTotal.textContent = `Total: $${total.toFixed(2)}`;
     }
 
-    function mostrarCarrito() {
+function mostrarCarrito() {
         const contenedor = document.getElementById("carrito-container");
         const authWarningContainer = document.getElementById("auth-warning-container");
         const addressContainer = document.getElementById("shipping-address-container");
@@ -185,9 +185,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!usuarioLogueado) {
                 if (authWarningContainer) {
                     authWarningContainer.innerHTML = `
-                        <p style="background: rgba(217, 83, 79, 0.2); border: 1px solid #d9534f; color: #fff; padding: 12px; border-radius: 5px; font-size: 0.95rem; text-align: center; margin: 15px 0;">
-                            Inicia sesión con Google para comprar
-                        </p>`;
+                        <div style="text-align: center; margin: 20px 0;">
+                            <p style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">
+                                Inicia sesión para continuar con tu compra:
+                            </p>
+                            <a href="/api/auth/google" class="btn-google" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" width="18" style="margin-right: 8px; vertical-align: middle;">
+                                Iniciar sesión con Google
+                            </a>
+                        </div>`;
                     authWarningContainer.style.display = "block";
                 }
                 if (addressContainer) addressContainer.style.display = "none";
@@ -198,7 +204,85 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (paypalButtonContainer) paypalButtonContainer.style.display = "none";
             } else {
                 if (authWarningContainer) authWarningContainer.style.display = "none";
-                if (addressContainer) addressContainer.style.display = "none";
+                if (addressContainer) {
+                    addressContainer.style.display = "block";
+                    addressContainer.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center;">
+                            <p style="color: #fff; margin-bottom: 8px;">📍 <strong>Dirección de envío guardada:</strong></p>
+                            <p id="info-direccion-actual" style="color: #ccc; margin-bottom: 12px; font-size: 0.9rem;">Cargando datos...</p>
+                            <button id="btn-cambiar-direccion" style="background: #d9534f; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                Cambiar / Modificar Dirección
+                            </button>
+                        </div>
+                    `;
+
+                    fetch('/api/auth/perfil', { credentials: 'include' })
+                        .then(res => res.json())
+                        .then(perfil => {
+                            const infoDir = document.getElementById("info-direccion-actual");
+                            if (infoDir && perfil.direccion) {
+                                infoDir.textContent = `${perfil.direccion}, ${perfil.ciudad} (CP: ${perfil.codigoPostal})`;
+                            }
+                        });
+
+                    const btnCambiarDir = document.getElementById("btn-cambiar-direccion");
+                    if (btnCambiarDir) {
+                        btnCambiarDir.addEventListener("click", async () => {
+                            if (confirm("¿Querés cambiar tu dirección de envío?")) {
+                                try {
+                                    const res = await fetch("/api/auth/direccion", { 
+                                        method: "DELETE", 
+                                        credentials: 'include' 
+                                    });
+                                    if (res.ok) {
+                                        tieneDireccion = false;
+                                        
+                                        if (addressContainer) {
+                                            addressContainer.style.display = "block";
+                                            addressContainer.innerHTML = `
+                                                <form id="address-form" style="margin-top: 15px;">
+                                                    <h3>Ingresá tu dirección de envío</h3>
+                                                    <input type="text" id="calle" placeholder="Calle y número" required style="display: block; width: 100%; margin-bottom: 10px; padding: 8px;">
+                                                    <input type="text" id="ciudad" placeholder="Ciudad" required style="display: block; width: 100%; margin-bottom: 10px; padding: 8px;">
+                                                    <input type="text" id="codigo-postal" placeholder="Código Postal" required style="display: block; width: 100%; margin-bottom: 10px; padding: 8px;">
+                                                    <button type="submit" style="padding: 8px 15px; cursor: pointer;">Guardar Dirección</button>
+                                                </form>
+                                            `;
+                                            
+                                            const newAddressForm = document.getElementById("address-form");
+                                            if (newAddressForm) {
+                                                newAddressForm.addEventListener("submit", async (ev) => {
+                                                    ev.preventDefault();
+                                                    const calle = document.getElementById("calle").value;
+                                                    const ciudad = document.getElementById("ciudad").value;
+                                                    const codigoPostal = document.getElementById("codigo-postal").value;
+
+                                                    const resPost = await fetch("/api/auth/direccion", {
+                                                        method: "POST",
+                                                        headers: { "Content-Type": "application/json" },
+                                                        credentials: 'include',
+                                                        body: JSON.stringify({ calle, ciudad, codigoPostal })
+                                                    });
+
+                                                    if (resPost.ok) {
+                                                        tieneDireccion = true;
+                                                        mostrarCarrito();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                        
+                                        if (paypalButtonContainer) paypalButtonContainer.style.display = "none";
+                                    } else {
+                                        alert("No se pudo actualizar la dirección.");
+                                    }
+                                } catch (err) {
+                                    console.error("Error de red:", err);
+                                }
+                            }
+                        });
+                    }
+                }
                 if (paypalButtonContainer) paypalButtonContainer.style.display = "block";
                 if (typeof mostrarBotonPago === "function") mostrarBotonPago();
             }

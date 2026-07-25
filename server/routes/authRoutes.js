@@ -89,4 +89,22 @@ router.post('/direccion', async (req, res) => {
     }
 });
 
+// Eliminar o blanquear la dirección del usuario para poder cargar otra
+router.delete('/direccion', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ mensaje: 'No autorizado.' });
+    }
+
+    try {
+        await Usuario.update(
+            { calle: null, ciudad: null, codigoPostal: null }, 
+            { where: { id: req.user.id } }
+        );
+        res.json({ success: true, message: "Dirección eliminada con éxito" });
+    } catch (error) {
+        console.error('Error al eliminar la dirección:', error);
+        res.status(500).json({ error: "Error al eliminar la dirección" });
+    }
+});
+
 module.exports = router;
