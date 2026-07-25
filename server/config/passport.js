@@ -9,28 +9,34 @@ passport.use(new GoogleStrategy({
 },
 async (accessToken, refreshToken, profile, done) => {
     try {
-        // 1. Buscamos si el usuario ya existe en nuestra base de datos por su email o googleId
-        let usuario = await Usuario.findOne({ where: { email: profile.emails[0].value } });
-
-        if (!usuario) {
-            // 2. Si no existe, lo creamos automáticamente usando los datos que nos da Google
-            usuario = await Usuario.create({
-                nombre: profile.displayName,
-                email: profile.emails[0].value,
-            });
-            console.log('Nuevo usuario registrado vía Google:', usuario.email);
-        } else {
-            console.log('Usuario existente logueado vía Google:', usuario.email);
+        const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+        
+        if (!email) {
+            return done(new Error("Google no devolvió un email válido."), null);
         }
 
-        // 3. Le decimos a Passport que todo salió bien y le pasamos el usuario
+        let [usuario, creado] = await Usuario.findOrCreate({
+            where: { email: email },
+            defaults: {
+                nombre: profile.displayName || 'Sin nombre',
+                googleId: profile.id
+            }
+        });
+
+        if (creado) {
+            console.log('Nuevo usuario registrado vía Google:', usuario.email);
+        } else if (!usuario.googleId) {
+            usuario.googleId = profile.id;
+            await usuario.save();
+        }
+
         return done(null, usuario);
     } catch (error) {
+        console.error("ERROR EN PASSPORT:", error);
         return done(error, null);
     }
 }));
 
-// Estos dos métodos sirven para que Passport mantenga al usuario "guardado" en la sesión (cookies)
 passport.serializeUser((usuario, done) => {
     done(null, usuario.id);
 });

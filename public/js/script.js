@@ -1,17 +1,98 @@
-
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+let usuarioLogueado = false;
+let tieneDireccion = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // ==========================================
-    // 1. CARGA INICIAL DE PRODUCTOS (FETCH)
-    // ==========================================
+    const loginItem = document.getElementById("login-item");
+    const logoutItem = document.getElementById("logout-item");
+    const userGreetingItem = document.getElementById("user-greeting-item");
+    const ordersItem = document.getElementById("orders-item");
+    const userNameSpan = document.getElementById("user-name");
+    const btnVerPedidos = document.getElementById("btn-ver-pedidos");
+    const seccionPedidos = document.getElementById("mis-pedidos");
+    const tablaPedidosBody = document.getElementById("tabla-pedidos-body");
+    
+    try {
+        const respuesta = await fetch('/api/auth/status', { credentials: 'include' });
+        const data = await respuesta.json();
+
+        if (data.loggedIn) {
+            usuarioLogueado = true;
+            if (loginItem) loginItem.style.display = "none";
+            if (logoutItem) logoutItem.style.display = "block";
+            if (userGreetingItem) userGreetingItem.style.display = "block";
+            if (ordersItem) ordersItem.style.display = "block";
+            if (userNameSpan) userNameSpan.textContent = `Hola, ${data.user.nombre.split(' ')[0]}`;
+
+            try {
+                const resPerfil = await fetch('/api/auth/perfil', { credentials: 'include' });
+                const perfil = await resPerfil.json();
+                tieneDireccion = !!(perfil.direccion && perfil.ciudad);
+            } catch (e) {
+                tieneDireccion = false;
+            }
+
+            if (btnVerPedidos) {
+                btnVerPedidos.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    if (seccionPedidos) {
+                        seccionPedidos.style.display = "flex";
+                        seccionPedidos.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    try {
+                        const resOrdenes = await fetch('/api/auth/mis-ordenes', { credentials: 'include' });
+                        const ordenes = await resOrdenes.json();
+
+                        if (!tablaPedidosBody) return;
+                        tablaPedidosBody.innerHTML = "";
+
+                        if (!Array.isArray(ordenes)) {
+                            console.error("La respuesta no es un array:", ordenes);
+                            return;
+                        }
+
+                        if (ordenes.length === 0) {
+                            tablaPedidosBody.innerHTML = `<tr><td colspan="4" style="padding: 15px; text-align: center;">Todavía no realizaste ninguna compra.</td></tr>`;
+                            return;
+                        }
+
+                        ordenes.forEach(orden => {
+                            const fecha = new Date(orden.createdAt).toLocaleDateString('es-AR');
+                            const fila = document.createElement("tr");
+                            fila.style.borderBottom = "1px solid rgba(255,255,255,0.2)";
+                            fila.innerHTML = `
+                                <td style="padding: 12px;">#${orden.id}</td>
+                                <td style="padding: 12px;">${fecha}</td>
+                                <td style="padding: 12px; font-weight: bold;">$${orden.total || 0}</td>
+                                <td style="padding: 12px;"><span style="color: ${orden.estado === 'completado' ? '#00ff00' : '#ffcc00'}">${orden.estado || 'Pendiente'}</span></td>
+                            `;
+                            tablaPedidosBody.appendChild(fila);
+                        });
+                    } catch (err) {
+                        console.error("Error al cargar las órdenes:", err);
+                    }
+                });
+            }
+        } else {
+            usuarioLogueado = false;
+            tieneDireccion = false;
+            if (loginItem) loginItem.style.display = "block";
+            if (logoutItem) logoutItem.style.display = "none";
+            if (userGreetingItem) userGreetingItem.style.display = "none";
+            if (ordersItem) ordersItem.style.display = "none";
+            if (seccionPedidos) seccionPedidos.style.display = "none";
+        }
+    } catch (error) {
+        console.error("Error al comprobar la sesión:", error);
+    }
+
     fetch("/api/products")
         .then(res => {
             if (!res.ok) throw new Error("Error en la respuesta del servidor");
             return res.json();
         })
         .then(data => {
-            console.log("Productos cargados desde MySQL:", data);
             mostrarProductos(data);
         })
         .catch(error => console.error("Error al cargar el catálogo:", error));
@@ -66,9 +147,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DEL CARRITO DE COMPRAS
-    // ==========================================
     function calcularTotal() {
         const total = carrito.reduce((acumulador, producto) => {
             return acumulador + (producto.precio * producto.cantidad);
@@ -80,10 +158,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function mostrarCarrito() {
         const contenedor = document.getElementById("carrito-container");
+        const authWarningContainer = document.getElementById("auth-warning-container");
+        const addressContainer = document.getElementById("shipping-address-container");
+        const paypalButtonContainer = document.getElementById("paypal-button-container");
+
         if (!contenedor) return;
         
         if (carrito.length === 0) {
             contenedor.innerHTML = "<p>El carrito está vacío</p>";
+            if (authWarningContainer) authWarningContainer.style.display = "none";
+            if (addressContainer) addressContainer.style.display = "none";
+            if (paypalButtonContainer) paypalButtonContainer.style.display = "none";
         } else {
             let html = "";
             carrito.forEach((producto) => {
@@ -96,12 +181,31 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             });
             contenedor.innerHTML = html;
+
+            if (!usuarioLogueado) {
+                if (authWarningContainer) {
+                    authWarningContainer.innerHTML = `
+                        <p style="background: rgba(217, 83, 79, 0.2); border: 1px solid #d9534f; color: #fff; padding: 12px; border-radius: 5px; font-size: 0.95rem; text-align: center; margin: 15px 0;">
+                            Inicia sesión con Google para comprar
+                        </p>`;
+                    authWarningContainer.style.display = "block";
+                }
+                if (addressContainer) addressContainer.style.display = "none";
+                if (paypalButtonContainer) paypalButtonContainer.style.display = "none";
+            } else if (!tieneDireccion) {
+                if (authWarningContainer) authWarningContainer.style.display = "none";
+                if (addressContainer) addressContainer.style.display = "block";
+                if (paypalButtonContainer) paypalButtonContainer.style.display = "none";
+            } else {
+                if (authWarningContainer) authWarningContainer.style.display = "none";
+                if (addressContainer) addressContainer.style.display = "none";
+                if (paypalButtonContainer) paypalButtonContainer.style.display = "block";
+                if (typeof mostrarBotonPago === "function") mostrarBotonPago();
+            }
         }
 
         activarBotonesEliminar();
         calcularTotal();
-
-        if (typeof mostrarBotonPago === "function") mostrarBotonPago();
     }
 
     function activarBotonesEliminar() {
@@ -136,84 +240,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Renderizar estado inicial del carrito al cargar la página
-    mostrarCarrito();
+    const addressForm = document.getElementById("address-form");
+    if (addressForm) {
+        addressForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const calle = document.getElementById("calle").value;
+            const ciudad = document.getElementById("ciudad").value;
+            const codigoPostal = document.getElementById("codigo-postal").value;
 
-    // ==========================================
-    // 3. ESTADO DE AUTENTICACIÓN Y MIS PEDIDOS
-    // ==========================================
-    const loginItem = document.getElementById("login-item");
-    const logoutItem = document.getElementById("logout-item");
-    const userGreetingItem = document.getElementById("user-greeting-item");
-    const ordersItem = document.getElementById("orders-item");
-    const userNameSpan = document.getElementById("user-name");
-    const btnVerPedidos = document.getElementById("btn-ver-pedidos");
-    const seccionPedidos = document.getElementById("mis-pedidos");
-    const tablaPedidosBody = document.getElementById("tabla-pedidos-body");
-
-    try {
-        const respuesta = await fetch('/api/auth/status');
-        const data = await respuesta.json();
-
-        if (data.loggedIn) {
-            if (loginItem) loginItem.style.display = "none";
-            if (logoutItem) logoutItem.style.display = "block";
-            if (userGreetingItem) userGreetingItem.style.display = "block";
-            if (ordersItem) ordersItem.style.display = "block";
-            
-            if (userNameSpan) userNameSpan.textContent = `Hola, ${data.user.nombre.split(' ')[0]}`;
-
-            if (btnVerPedidos) {
-                btnVerPedidos.addEventListener("click", async (e) => {
-                    e.preventDefault();
-                    if (seccionPedidos) {
-                        seccionPedidos.style.display = "flex";
-                        seccionPedidos.scrollIntoView({ behavior: 'smooth' });
-                    }
-
-                    try {
-                        const resOrdenes = await fetch('/api/auth/mis-ordenes');
-                        const ordenes = await resOrdenes.json();
-
-                        if (!tablaPedidosBody) return;
-                        tablaPedidosBody.innerHTML = "";
-
-                        if (ordenes.length === 0) {
-                            tablaPedidosBody.innerHTML = `<tr><td colspan="4" style="padding: 15px; text-align: center;">Todavía no realizaste ninguna compra.</td></tr>`;
-                            return;
-                        }
-
-                        ordenes.forEach(orden => {
-                            const fecha = new Date(orden.createdAt).toLocaleDateString('es-AR');
-                            const fila = document.createElement("tr");
-                            fila.style.borderBottom = "1px solid rgba(255,255,255,0.2)";
-                            fila.innerHTML = `
-                                <td style="padding: 12px;">#${orden.id}</td>
-                                <td style="padding: 12px;">${fecha}</td>
-                                <td style="padding: 12px; font-weight: bold;">$${orden.total || 0}</td>
-                                <td style="padding: 12px;"><span style="color: ${orden.estado === 'completado' ? '#00ff00' : '#ffcc00'}">${orden.estado || 'Pendiente'}</span></td>
-                            `;
-                            tablaPedidosBody.appendChild(fila);
-                        });
-                    } catch (err) {
-                        console.error("Error al cargar las órdenes:", err);
-                    }
+            try {
+                const res = await fetch("/api/auth/direccion", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ calle, ciudad, codigoPostal })
                 });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("¡Dirección guardada con éxito!");
+                    tieneDireccion = true;
+                    mostrarCarrito();
+                } else {
+                    alert(`Error: ${data.error || "No se pudo guardar la dirección"}`);
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                alert("Hubo un error al conectar con el servidor.");
             }
-        } else {
-            if (loginItem) loginItem.style.display = "block";
-            if (logoutItem) logoutItem.style.display = "none";
-            if (userGreetingItem) userGreetingItem.style.display = "none";
-            if (ordersItem) ordersItem.style.display = "none";
-            if (seccionPedidos) seccionPedidos.style.display = "none";
-        }
-    } catch (error) {
-        console.error("Error al comprobar la sesión:", error);
+        });
     }
 
-    // ==========================================
-    // 4. FORMULARIO DE CONTACTO
-    // ==========================================
+    mostrarCarrito();
+
     const formularioContacto = document.getElementById("contacto-form");
     if (formularioContacto) {
         formularioContacto.addEventListener("submit", async (e) => {

@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db'); // El archivo de conexión a la base de datos
+const sequelize = require('../config/db');
 
 const Usuario = sequelize.define('Usuario', {
   id: {
@@ -14,14 +14,26 @@ const Usuario = sequelize.define('Usuario', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true // No puede haber dos usuarios con el mismo email
+    unique: true
   },
   googleId: {
     type: DataTypes.STRING,
-    allowNull: true // Por si en el futuro querés agregar login clásico
+    allowNull: true
+  },
+  calle: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  ciudad: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  codigoPostal: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
-  timestamps: true // Nos crea automáticamente createdAt y updatedAt
+  timestamps: true
 });
 
 module.exports = Usuario;
